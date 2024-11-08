@@ -3,7 +3,9 @@ from cryptography.hazmat.primitives import serialization, hashes
 
 
 class RSAEncryptor:
-    def generate_keys(self, password: str = None) -> (str, str):
+
+    @staticmethod
+    def generate_keys(password: str = None) -> (str, str):
         private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048
@@ -28,7 +30,8 @@ class RSAEncryptor:
 
         return private_pem, public_pem
 
-    def encrypt_with_public_key(self, public_key_pem: str, message: str) -> bytes:
+    @staticmethod
+    def encrypt_with_public_key(public_key_pem: str, message: str) -> bytes:
         public_key = serialization.load_pem_public_key(public_key_pem.encode('utf-8'))
         encrypted = public_key.encrypt(
             message.encode(),
@@ -40,7 +43,8 @@ class RSAEncryptor:
         )
         return encrypted
 
-    def encrypt_with_private_key(self, private_key_pem: str, message: str, password: str = None) -> bytes:
+    @staticmethod
+    def encrypt_with_private_key(private_key_pem: str, message: str, password: str = None) -> bytes:
         private_key = serialization.load_pem_private_key(
             private_key_pem.encode('utf-8'),
             password=password.encode() if password else None
@@ -55,7 +59,8 @@ class RSAEncryptor:
         )
         return encrypted
 
-    def decrypt_with_private_key(self, private_key_pem: str, encrypted_message: bytes, password: str = None) -> str:
+    @staticmethod
+    def decrypt_with_private_key(private_key_pem: str, encrypted_message: bytes, password: str = None) -> str:
         private_key = serialization.load_pem_private_key(
             private_key_pem.encode('utf-8'),
             password=password.encode() if password else None
@@ -70,7 +75,8 @@ class RSAEncryptor:
         )
         return decrypted.decode('utf-8')
 
-    def verify_with_public_key(self, public_key_pem: str, signed_message: bytes, original_message: str) -> bool:
+    @staticmethod
+    def verify_with_public_key(public_key_pem: str, signed_message: bytes, original_message: str) -> bool:
         public_key = serialization.load_pem_public_key(public_key_pem.encode('utf-8'))
         try:
             public_key.verify(

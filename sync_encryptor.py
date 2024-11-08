@@ -7,29 +7,25 @@ from cryptography.fernet import Fernet
 
 class SyncEncryptor:
 
-    def __init__(self, passphrase: str):
-
-        self.passphrase = passphrase.encode()
-
     def _generate_salt(self) -> bytes:
         return os.urandom(16)
 
-    def _generate_key(self, salt: bytes = b'') -> bytes:
+    def _generate_key(self, passphrase: str, salt: bytes = b'') -> bytes:
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
             iterations=100000,
         )
-        return base64.urlsafe_b64encode(kdf.derive(self.passphrase))
+        return base64.urlsafe_b64encode(kdf.derive(passphrase.encode()))
 
-    def encrypt(self, data, use_salt: bool = False, is_bytes: bool = False) -> (str, str):
+    def encrypt(self, data, passphrase: str, use_salt: bool = False, is_bytes: bool = False) -> (str, str):
         salt = None
         if use_salt:
             salt = self._generate_salt()
-            key = self._generate_key(salt)
+            key = self._generate_key(passphrase=passphrase, salt=salt)
         else:
-            key = self._generate_key()
+            key = self._generate_key(passphrase=passphrase)
 
         cipher = Fernet(key)
 
@@ -41,12 +37,12 @@ class SyncEncryptor:
         return (encrypted_data.decode() if not is_bytes else encrypted_data,
                 base64.urlsafe_b64encode(salt).decode() if use_salt else None)
 
-    def decrypt(self, encrypted_data, salt: str = None, is_bytes: bool = False) -> (str, bytes):
+    def decrypt(self, encrypted_data, passphrase: str, salt: str = None, is_bytes: bool = False) -> (str, bytes):
         if salt:
             salt = base64.urlsafe_b64decode(salt)
-            key = self._generate_key(salt)
+            key = self._generate_key(passphrase, salt)
         else:
-            key = self._generate_key()
+            key = self._generate_key(passphrase)
 
         cipher = Fernet(key)
 
